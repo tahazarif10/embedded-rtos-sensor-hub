@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     container:
-      image: ghcr.io/zephyrproject-rtos/ci-repo-cache:v0.29.3.20260727
+      image: ghcr.io/zephyrproject-rtos/zephyr-build:v0.29.3
       options: --entrypoint /bin/bash
 
     steps:
