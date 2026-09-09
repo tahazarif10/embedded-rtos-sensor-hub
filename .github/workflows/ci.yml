@@ -43,9 +43,9 @@ jobs:
           .venv/bin/west update --narrow -o=--depth=1
           .venv/bin/west zephyr-export
           .venv/bin/python -m pip install \
-            -r zephyr/scripts/requirements-base.txt \
-            -r zephyr/scripts/requirements-build-test.txt \
-            -r zephyr/scripts/requirements-run-test.txt
+            -r ../zephyr/scripts/requirements-base.txt \
+            -r ../zephyr/scripts/requirements-build-test.txt \
+            -r ../zephyr/scripts/requirements-run-test.txt
 
       - name: Build native_sim application
         run: |
