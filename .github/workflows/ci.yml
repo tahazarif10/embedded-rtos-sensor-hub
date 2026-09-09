@@ -53,7 +53,7 @@ jobs:
 
       - name: Build stall-injection variant
         run: |
-          west build -b native_sim -s app -d build/stall -- \
+          west build -b native_sim -s . -d build/stall -- \
             -DCONFIG_SENSOR_HUB_INJECT_STALL=y
 
       - name: Run Twister regression suite
