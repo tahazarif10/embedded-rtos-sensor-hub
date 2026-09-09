@@ -1,0 +1,24 @@
+mainmenu "Embedded RTOS Sensor Hub"
+
+menu "Sensor hub"
+
+config SENSOR_HUB_INJECT_STALL
+	bool "Inject deterministic vibration-sensor stall"
+	default n
+	help
+	  Stop the simulated vibration producer after a fixed number of samples.
+	  This is used to exercise stale-sensor supervision.
+
+config SENSOR_HUB_STALL_AFTER_SAMPLES
+	int "Samples before injected vibration stall"
+	default 12
+	range 1 10000
+
+config SENSOR_HUB_STALE_AFTER_MS
+	int "Sensor stale timeout in milliseconds"
+	default 250
+	range 10 60000
+
+endmenu
+
+source "Kconfig.zephyr"

@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "dev/**", "fix/**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    container:
+      image: ghcr.io/zephyrproject-rtos/ci-repo-cache:v0.29.3.20260727
+      options: --entrypoint /bin/bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Initialize Zephyr workspace
+        run: |
+          west init -l .
+          west update --narrow -o=--depth=1
+          west zephyr-export
+
+      - name: Build native_sim application
+        run: |
+          west build -b native_sim -s app -d build/app
+
+      - name: Build stall-injection variant
+        run: |
+          west build -b native_sim -s app -d build/stall --             -DCONFIG_SENSOR_HUB_INJECT_STALL=y
+
+      - name: Run Twister regression suite
+        run: |
+          west twister -T tests -p native_sim --inline-logs
