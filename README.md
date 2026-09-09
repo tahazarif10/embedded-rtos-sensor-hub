@@ -44,7 +44,7 @@ west init -l .
 west update
 west zephyr-export
 
-west build -b native_sim -s app -d build/app
+west build -b native_sim -s . -d build/app
 ```
 
 Run the unit/regression suite:
