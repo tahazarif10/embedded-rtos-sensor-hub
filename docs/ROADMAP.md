@@ -10,7 +10,8 @@
 - [x] deterministic producer-stall injection
 - [x] queue-pressure metrics
 - [x] ztest/Twister regression suite
-- [ ] hosted CI evidence
+- [x] normal + stall-injection `native_sim` builds
+- [x] hosted PR and merged-main CI evidence
 
 ## v0.2 — Driver boundary
 
