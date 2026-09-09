@@ -15,11 +15,11 @@ K_MSGQ_DEFINE(test_queue, sizeof(struct sensor_hub_sample), 2, 4);
 
 static struct sensor_hub_state state;
 
-static void *sensor_hub_setup(void)
+static void sensor_hub_before(void *fixture)
 {
+	ARG_UNUSED(fixture);
 	sensor_hub_init(&state);
 	k_msgq_purge(&test_queue);
-	return NULL;
 }
 
 ZTEST(sensor_hub, test_initial_state_is_bounded_and_empty)
@@ -119,4 +119,4 @@ ZTEST(sensor_hub, test_bounded_queue_pressure_is_observable)
 	zassert_equal(snapshot.dropped_samples, 1U);
 }
 
-ZTEST_SUITE(sensor_hub, NULL, sensor_hub_setup, NULL, NULL, NULL);
+ZTEST_SUITE(sensor_hub, NULL, NULL, sensor_hub_before, NULL, NULL);
