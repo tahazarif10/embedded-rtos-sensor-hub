@@ -8,6 +8,7 @@ manifest:
       remote: zephyrproject-rtos
       revision: v4.4.2
       path: zephyr
+      west-commands: scripts/west-commands.yml
 
   self:
     path: .
