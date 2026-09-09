@@ -1,0 +1,8 @@
+tests:
+  sensor_hub.core:
+    platform_allow:
+      - native_sim
+    tags:
+      - kernel
+      - sensor_hub
+      - message_queue

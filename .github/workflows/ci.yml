@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  ZEPHYR_TOOLCHAIN_VARIANT: host/gnu
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install host dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            cmake ninja-build gperf ccache device-tree-compiler \
+            python3-dev python3-venv python3-pip \
+            gcc gcc-multilib g++ g++-multilib \
+            libsdl2-dev xz-utils file make
+
+      - name: Initialize Zephyr workspace
+        run: |
+          python3 -m venv .venv
+          echo "$GITHUB_WORKSPACE/.venv/bin" >> "$GITHUB_PATH"
+          .venv/bin/python -m pip install --upgrade pip
+          .venv/bin/python -m pip install west
+          .venv/bin/west init -l .
+          .venv/bin/west update --narrow -o=--depth=1
+          .venv/bin/west zephyr-export
+          .venv/bin/python -m pip install \
+            -r ../zephyr/scripts/requirements-base.txt \
+            -r ../zephyr/scripts/requirements-build-test.txt \
+            -r ../zephyr/scripts/requirements-run-test.txt
+
+      - name: Build native_sim application
+        run: |
+          west build -b native_sim -s . -d build/app
+
+      - name: Build stall-injection variant
+        run: |
+          west build -b native_sim -s . -d build/stall -- \
+            -DCONFIG_SENSOR_HUB_INJECT_STALL=y
+
+      - name: Run Twister regression suite
+        run: |
+          west twister -T tests -p native_sim --inline-logs
