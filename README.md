@@ -58,7 +58,7 @@ west twister -T tests -p native_sim --inline-logs
 Enable the deterministic vibration-producer stall:
 
 ```bash
-west build -b native_sim -s app -d build/stall -- \
+west build -b native_sim -s . -d build/stall -- \
   -DCONFIG_SENSOR_HUB_INJECT_STALL=y
 ```
 
