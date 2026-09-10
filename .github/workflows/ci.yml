@@ -56,6 +56,12 @@ jobs:
           west build -b native_sim -s . -d build/stall -- \
             -DCONFIG_SENSOR_HUB_INJECT_STALL=y
 
+      - name: Build transient bus-fault variant
+        run: |
+          west build -b native_sim -s . -d build/bus-fault -- \
+            -DCONFIG_SENSOR_HUB_INJECT_BUS_FAULT=y \
+            -DCONFIG_SENSOR_HUB_BUS_FAULT_ATTEMPTS=2
+
       - name: Run Twister regression suite
         run: |
           west twister -T tests -p native_sim --inline-logs

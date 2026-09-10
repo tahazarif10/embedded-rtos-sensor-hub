@@ -19,6 +19,30 @@ config SENSOR_HUB_STALE_AFTER_MS
 	default 250
 	range 10 60000
 
+config SENSOR_HUB_DRIVER_MAX_RETRIES
+	int "Maximum bus retries after the first failed transfer"
+	default 2
+	range 0 10
+	help
+	  Number of retry attempts allowed after an initial acquisition failure.
+
+config SENSOR_HUB_INJECT_BUS_FAULT
+	bool "Inject deterministic vibration bus failures"
+	default n
+	help
+	  Inject a bounded sequence of simulated bus read failures for the
+	  vibration sensor to exercise retry and recovery behavior.
+
+config SENSOR_HUB_BUS_FAULT_AFTER_SAMPLES
+	int "Samples before injected bus fault"
+	default 8
+	range 1 10000
+
+config SENSOR_HUB_BUS_FAULT_ATTEMPTS
+	int "Consecutive simulated bus failures"
+	default 2
+	range 1 100
+
 endmenu
 
 source "Kconfig.zephyr"
