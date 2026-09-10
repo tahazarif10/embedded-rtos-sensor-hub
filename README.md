@@ -9,39 +9,58 @@ sensor hub using native simulation before any hardware claim is made.
 
 ## Current status
 
-**v0.1 RTOS core — complete**
+**v0.2 driver boundary and bus-fault recovery — complete**
 
-Hosted CI has verified both the normal and fault-injection builds and the complete
-ztest/Twister suite on `native_sim/native`.
+The project now combines the v0.1 bounded RTOS pipeline with a testable sensor
+acquisition boundary. Hosted CI verifies normal, producer-stall, and transient
+bus-fault builds plus the complete ztest/Twister suite on `native_sim/native`.
 
-The milestone exercises real RTOS primitives and failure handling:
+Verified engineering scope:
 
-- two deterministic sensor-producer threads
-- consumer, supervisor, and telemetry threads
-- a bounded `k_msgq` sample pipeline
+- five statically defined Zephyr threads
+- bounded `k_msgq` sample pipeline
 - startup synchronization with `k_sem`
-- shared telemetry protected by `k_mutex`
-- a software heartbeat watchdog for stale-sensor detection
-- explicit queue-drop and queue high-watermark metrics
-- deterministic vibration-sensor stall injection
-- **5/5 checked-in ztest cases passing**
+- shared metrics protected by `k_mutex`
+- software heartbeat watchdog for stale-sensor detection
+- explicit queue-drop and queue high-watermark accounting
+- abstract bus read interface between producer threads and sensor data
+- simulated **I2C-style** temperature transaction contract
+- simulated **SPI-style** vibration transaction contract
+- bounded retry policy with transfer/retry/failure metrics
+- per-sensor sequence continuity validation with resynchronization
+- timestamp-regression rejection without poisoning the later valid baseline
+- deterministic producer-stall and transient bus-fault injection
+- **12/12 checked-in ztest cases passing**
 - GitHub Actions verification on the PR and merged `main`
 
-The project intentionally uses fixed-size messages and bounded queues. The
-application data path does not allocate from the heap.
+The application data path uses fixed-size messages and bounded kernel objects; it
+does not allocate from the heap.
 
 ## Architecture
 
 ```text
-temperature producer ─┐
-                      ├─> bounded k_msgq ─> consumer ─> protected telemetry
-vibration producer ───┘                         │
-                                               ├─> software watchdog supervisor
-                                               └─> periodic telemetry reporter
+                           simulated bus boundary
+                         ┌──────────────────────────┐
+temperature producer ───>│ I2C-style read + retry  │─┐
+vibration producer ─────>│ SPI-style read + retry  │─┼─> bounded k_msgq
+                         └──────────────────────────┘ │
+                                                     v
+                                                  consumer
+                                                     │
+                              ┌──────────────────────┴───────────────────┐
+                              v                                          v
+                    protected telemetry                       heartbeat supervisor
+                              │
+                              v
+                      telemetry reporter
 ```
 
-The software watchdog is a health supervisor based on producer heartbeats. It is
-**not** a claim that a hardware watchdog peripheral is configured.
+The I2C/SPI layer is deliberately simulated and testable. It establishes driver
+contracts and error handling without claiming physical electrical, timing, or
+peripheral behavior.
+
+The watchdog remains a **software health supervisor**; a hardware watchdog
+peripheral is not claimed.
 
 ## Build
 
@@ -52,7 +71,6 @@ python -m pip install west
 west init -l .
 west update
 west zephyr-export
-
 west build -b native_sim -s . -d build/app
 ```
 
@@ -64,29 +82,46 @@ west twister -T tests -p native_sim --inline-logs
 
 ## Fault injection
 
-Enable the deterministic vibration-producer stall:
+Producer-stall build:
 
 ```bash
 west build -b native_sim -s . -d build/stall -- \
   -DCONFIG_SENSOR_HUB_INJECT_STALL=y
 ```
 
-After the configured number of vibration samples, that producer stops publishing.
-The supervisor marks it stale after the configured timeout and increments a
-stale-event counter.
+Transient bus-fault build:
+
+```bash
+west build -b native_sim -s . -d build/bus-fault -- \
+  -DCONFIG_SENSOR_HUB_INJECT_BUS_FAULT=y \
+  -DCONFIG_SENSOR_HUB_BUS_FAULT_ATTEMPTS=2
+```
+
+The bus-fault fixture injects bounded read failures into the simulated vibration
+bus so retry and recovery behavior is exercised deterministically.
 
 ## Hosted evidence
+
+### v0.1
 
 - [PR #1](https://github.com/tahazarif10/embedded-rtos-sensor-hub/pull/1)
 - [PR CI #34406892562](https://github.com/tahazarif10/embedded-rtos-sensor-hub/actions/runs/34406892562) — success
 - merge commit `efcb16c30a110c5bb8644c36e193bb856493e60d`
 - [merged-main CI #34407100161](https://github.com/tahazarif10/embedded-rtos-sensor-hub/actions/runs/34407100161) — success
 
+### v0.2
+
+- [PR #3](https://github.com/tahazarif10/embedded-rtos-sensor-hub/pull/3)
+- [PR CI #34493289155](https://github.com/tahazarif10/embedded-rtos-sensor-hub/actions/runs/34493289155) — success
+- merge commit `156903b57eb5525849094a76ca851349a9b0fc34`
+- [merged-main CI #34493673687](https://github.com/tahazarif10/embedded-rtos-sensor-hub/actions/runs/34493673687) — success
+- Twister: **12/12 executed test cases passed** on `native_sim/native`
+
 ## Evidence policy
 
 All timing and behavior claims in this repository are scoped to the checked-in
 Zephyr/native-simulation configuration. Hardware latency, interrupt response,
-physical sensor accuracy, hardware watchdog behavior, physical buses, and safety
-certification are out of scope until measured on actual hardware.
+physical sensor accuracy, hardware watchdog behavior, physical I2C/SPI behavior,
+and safety certification remain out of scope until measured on actual hardware.
 
 See [Architecture](docs/ARCHITECTURE.md), [Verification](docs/VERIFICATION.md), and [Roadmap](docs/ROADMAP.md).

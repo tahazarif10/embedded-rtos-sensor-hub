@@ -15,18 +15,23 @@
 
 ## v0.2 — Driver boundary
 
-- [ ] abstract sensor acquisition interface
-- [ ] simulated I2C/SPI-style transaction layer
-- [ ] retry/error policy
-- [ ] timestamp and sequence integrity checks
-- [ ] deterministic bus-fault injection
+- [x] abstract sensor acquisition interface
+- [x] simulated I2C/SPI-style transaction layer
+- [x] bounded retry/error policy with metrics
+- [x] timestamp and sequence integrity checks
+- [x] deterministic bus-fault injection
+- [x] normal + stall + bus-fault `native_sim` builds
+- [x] expanded ztest/Twister regression suite
+- [x] hosted PR and merged-main CI evidence
 
 ## v0.3 — Telemetry transport
 
-- [ ] bounded telemetry frame format
+- [ ] bounded versioned telemetry frame format
 - [ ] UART-style transport adapter
 - [ ] backpressure/drop accounting
+- [ ] deterministic queue-pressure injection
 - [ ] host-side decoder and replay fixture
+- [ ] encode/decode/integrity tests
 
 ## v0.4 — Hardware qualification
 
