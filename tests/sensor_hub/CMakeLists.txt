@@ -8,5 +8,8 @@ target_include_directories(app PRIVATE ../../include)
 
 target_sources(app PRIVATE
   src/main.c
+  src/test_driver.c
   ../../src/sensor_hub.c
+  ../../src/acquisition.c
+  ../../src/sim_bus.c
 )
