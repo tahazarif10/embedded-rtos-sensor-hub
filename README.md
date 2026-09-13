@@ -116,11 +116,11 @@ The bus-fault fixture injects bounded read failures into the simulated vibration
 
 ## Related upstream work
 
-A separate contribution to the upstream Zephyr project is currently under review:
+A separate documentation-correctness contribution to the upstream Zephyr project has been **merged**:
 
 - [Zephyr RTOS PR #118636 — Bluetooth: HCI: clarify pairing error scope](https://github.com/zephyrproject-rtos/zephyr/pull/118636)
 
-It remains an upstream-review item and is not counted as a merged contribution until the Zephyr project merges it.
+The contribution clarifies the BR/EDR-only scope of Bluetooth HCI status `0x29` in public API/test documentation. It is a documentation/specification correctness fix and does not claim a runtime Bluetooth implementation change.
 
 ## Evidence policy
 
